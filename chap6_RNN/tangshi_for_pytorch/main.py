@@ -4,7 +4,7 @@ import torch
 from torch.autograd import Variable
 import torch.optim as optim
 
-import rnn
+import rnn as rnn_lstm
 
 start_token = 'G'
 end_token = 'E'
@@ -34,7 +34,7 @@ def process_poems1(file_name):
                 content = start_token + content + end_token
                 poems.append(content)
             except ValueError as e:
-                print("error")
+                # 原始逻辑：格式异常的行直接跳过，这里不再打印 error，避免干扰输出
                 pass
     # 按诗的字数排序
     poems = sorted(poems, key=lambda line: len(line))
@@ -76,7 +76,7 @@ def process_poems2(file_name):
                     poems.append(content)
                     # content = ''
             except ValueError as e:
-                # print("error")
+                # 保持与原始逻辑一致：出错行直接跳过
                 pass
     # 按诗的字数排序
     poems = sorted(poems, key=lambda line: len(line))
@@ -180,14 +180,13 @@ def to_word(predict, vocabs):  # 预测的结果转化成汉字
 
 
 def pretty_print_poem(poem):  # 令打印的结果更工整
-    shige=[]
-    for w in poem:
-        if w == start_token or w == end_token:
-            break
-        shige.append(w)
-    poem_sentences = poem.split('。')
-    for s in poem_sentences:
-        if s != '' and len(s) > 10:
+    # 始终从生成的第一个字符开始打印（去掉起止标记），避免因长度阈值导致首句被跳过
+    content = ''.join([w for w in poem if w not in (start_token, end_token)])
+    sentences = content.split('。')
+    if sentences and sentences[0]:
+        print(sentences[0] + '。')
+    for s in sentences[1:]:
+        if s != '':
             print(s + '。')
 
 
@@ -218,7 +217,7 @@ def gen_poem(begin_word):
 
 
 
-run_training()  # 如果不是训练阶段 ，请注销这一行 。 网络训练时间很长。
+#run_training()  # 如果不是训练阶段 ，请注销这一行 。 网络训练时间很长。
 
 
 pretty_print_poem(gen_poem("日"))
@@ -226,8 +225,7 @@ pretty_print_poem(gen_poem("红"))
 pretty_print_poem(gen_poem("山"))
 pretty_print_poem(gen_poem("夜"))
 pretty_print_poem(gen_poem("湖"))
-pretty_print_poem(gen_poem("湖"))
-pretty_print_poem(gen_poem("湖"))
-pretty_print_poem(gen_poem("君"))
+pretty_print_poem(gen_poem("海"))
+pretty_print_poem(gen_poem("月"))
 
 
